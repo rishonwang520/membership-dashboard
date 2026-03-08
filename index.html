@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>One Park - Membership Dashboard</title>
+  <title>Membership Dashboard - Multi-Store Analytics</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,6 +25,31 @@
     .header h1 { font-size: 28px; margin-bottom: 8px; }
     .header p { opacity: 0.9; font-size: 14px; }
 
+    /* Store Selector */
+    .store-selector {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .store-btn {
+      padding: 12px 24px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .store-btn:hover { border-color: #3b82f6; background: #f8fafc; }
+    .store-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      border-color: transparent;
+    }
+
     /* Tabs */
     .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
     .tab-btn {
@@ -42,29 +67,12 @@
       background: #3b82f6;
       color: white;
     }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
 
-    /* Cards */
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .card h3 {
-      font-size: 18px;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-    .card p.desc {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 16px;
-    }
+    /* Panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
-    /* Summary Grid */
+    /* Summary Cards */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -73,539 +81,674 @@
     }
     .summary-card {
       background: white;
-      border-radius: 12px;
       padding: 20px;
+      border-radius: 12px;
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .summary-card .value {
       font-size: 28px;
       font-weight: bold;
-      margin-bottom: 4px;
-    }
-    .summary-card .label {
-      font-size: 12px;
-      color: #64748b;
-    }
-    .summary-card .sub {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 8px;
-    }
-    .blue .value { color: #3b82f6; }
-    .green .value { color: #10b981; }
-    .amber .value { color: #f59e0b; }
-    .purple .value { color: #8b5cf6; }
-    .cyan .value { color: #06b6d4; }
-    .rose .value { color: #f43f5e; }
-
-    /* Chart container */
-    .chart-container {
-      position: relative;
-      height: 300px;
-      margin: 20px 0;
-    }
-
-    /* Formula box */
-    .formula-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-      font-size: 12px;
-      color: #475569;
-    }
-    .formula-box h4 {
-      color: #334155;
       margin-bottom: 8px;
     }
-    .formula-box code {
-      display: block;
-      margin: 4px 0;
-      font-family: monospace;
-    }
+    .summary-card .label { font-size: 12px; color: #64748b; }
+    .summary-card .subtext { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+    .blue { color: #3b82f6; }
+    .green { color: #10b981; }
+    .amber { color: #f59e0b; }
+    .purple { color: #8b5cf6; }
 
-    /* Value tier cards */
-    .value-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-    }
-    .value-card {
-      padding: 20px;
+    /* Charts */
+    .chart-card {
+      background: white;
+      padding: 24px;
       border-radius: 12px;
-      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .value-card.purple { background: linear-gradient(135deg, #faf5ff, #fdf2f8); }
-    .value-card.blue { background: linear-gradient(135deg, #eff6ff, #ecfeff); }
-    .value-card.amber { background: linear-gradient(135deg, #fffbeb, #fef3c7); }
-    .value-card.green { background: linear-gradient(135deg, #f0fdf4, #d1fae5); }
-    .value-card .pct {
-      font-size: 32px;
-      font-weight: bold;
-    }
-    .value-card.purple .pct { color: #9333ea; }
-    .value-card.blue .pct { color: #2563eb; }
-    .value-card.amber .pct { color: #d97706; }
-    .value-card.green .pct { color: #16a34a; }
-    .value-card .title { font-size: 14px; color: #475569; margin-top: 8px; }
-    .value-card .revenue { font-size: 14px; font-weight: 600; margin-top: 8px; }
-    .value-card .definition {
-      font-size: 11px;
-      color: #64748b;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
-      text-align: left;
+    .chart-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .chart-desc { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+    .chart-container { height: 300px; position: relative; }
+
+    /* Charts Row */
+    .charts-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
     }
 
-    /* Category grid */
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
+    /* Metrics Card */
+    .metrics-card {
+      background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+      padding: 24px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 24px;
     }
-    @media (max-width: 768px) {
-      .category-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .category-card {
+    .metric { text-align: center; }
+    .metric .big-value { font-size: 28px; font-weight: bold; margin-bottom: 4px; }
+    .metric .label { font-size: 12px; color: #64748b; }
+
+    /* Formula Card */
+    .formula-card {
+      background: #fefce8;
+      border: 1px solid #fde047;
       padding: 16px;
       border-radius: 8px;
-      color: white;
+      margin-top: 16px;
+    }
+    .formula-card h4 { font-size: 14px; margin-bottom: 8px; }
+    .formula-card p { font-size: 12px; color: #64748b; margin: 4px 0; }
+
+    /* Category Groups */
+    .category-groups { display: flex; flex-direction: column; gap: 16px; }
+    .category-group {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .category-group h4 { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .category-group .color-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .category-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .category-item {
+      background: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    /* Weekly Frequency Section */
+    .weekly-section {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+      border: 2px solid #c084fc;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .weekly-header { margin-bottom: 20px; }
+    .weekly-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .weekly-metric {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
       text-align: center;
     }
-    .category-card .pct { font-size: 24px; font-weight: bold; }
-    .category-card .name { font-size: 12px; margin-top: 4px; }
+    .weekly-metric .value { font-size: 24px; font-weight: bold; }
+    .weekly-metric .label { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .weekly-metric .sub { font-size: 10px; color: #94a3b8; }
+
+    .info-box {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #64748b;
+      border: 1px dashed #cbd5e1;
+      margin-top: 16px;
+    }
 
     /* Footer */
     .footer {
       text-align: center;
+      padding: 24px;
       color: #64748b;
       font-size: 12px;
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    @media print {
-      .tab-content { display: block !important; page-break-after: always; }
-      .tabs { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <h1>📊 One Park - Membership Dashboard</h1>
-      <p>One Park 会员数据分析</p>
-      <p style="margin-top: 8px;">Analysis Period: 2024-01-01 to 2024-12-31 | 分析周期: 2024-01-01 to 2024-12-31</p>
-    </div>
+<div class="container">
+  <div class="header">
+    <h1 id="main-title">📊 Membership Dashboard</h1>
+    <p id="sub-title">会员数据分析仪表板 | Multi-Store Analytics</p>
+  </div>
 
-    <!-- Summary Cards -->
-    <div class="summary-grid">
-      <div class="summary-card blue">
-        <div class="value">18,441</div>
-        <div class="label">Total Members / 总会员数</div>
-        <div class="sub">100% of member base</div>
-      </div>
-      <div class="summary-card green">
-        <div class="value">51,678</div>
-        <div class="label">Member Total Tickets / 会员总票数</div>
-        <div class="sub">47.9% of total | 2.80x per member</div>
-      </div>
-      <div class="summary-card amber">
-        <div class="value">$1,319,072</div>
-        <div class="label">Member Total Revenue / 会员总销售额</div>
-        <div class="sub">53.5% of $2,467,289 total</div>
-      </div>
-      <div class="summary-card purple">
-        <div class="value">$25.52</div>
-        <div class="label">Member Avg Ticket / 会员平均客单价</div>
-        <div class="sub">Non-Member: $20.44</div>
-      </div>
-      <div class="summary-card cyan">
-        <div class="value">4.89</div>
-        <div class="label">Member Avg SKU/Ticket / 会员平均每票SKU</div>
-        <div class="sub">Store Avg: 4.20</div>
-      </div>
-      <div class="summary-card rose">
-        <div class="value">2.30</div>
-        <div class="label">Avg Categories / 平均品类数</div>
-        <div class="sub">Per member / 每会员</div>
-      </div>
-    </div>
+  <!-- Store Selector -->
+  <div class="store-selector" id="store-selector">
+    
+      <button class="store-btn active"
+              data-store="overall"
+              onclick="switchStore('overall')">
+        All Stores / 所有店铺
+      </button>
+    
+      <button class="store-btn "
+              data-store="CS Store"
+              onclick="switchStore('CS Store')">
+        CS Store
+      </button>
+    
+      <button class="store-btn "
+              data-store="JT Store"
+              onclick="switchStore('JT Store')">
+        JT Store
+      </button>
+    
+      <button class="store-btn "
+              data-store="KP Store"
+              onclick="switchStore('KP Store')">
+        KP Store
+      </button>
+    
+  </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('overview')">Overview / 概览</button>
-      <button class="tab-btn" onclick="switchTab('frequency')">Frequency / 频次</button>
-      <button class="tab-btn" onclick="switchTab('value')">Value / 价值</button>
-      <button class="tab-btn" onclick="switchTab('category')">Category / 品类</button>
+  <!-- Summary Cards -->
+  <div class="summary-grid" id="summary-grid">
+    <div class="summary-card">
+      <div class="value blue" id="total-members">18,441</div>
+      <div class="label">Total Members / 总会员数</div>
     </div>
+    <div class="summary-card">
+      <div class="value green" id="member-revenue">$1,319,072</div>
+      <div class="label">Member Revenue / 会员收入</div>
+      <div class="subtext" id="member-revenue-pct">53.5% of total</div>
+    </div>
+    <div class="summary-card">
+      <div class="value amber" id="member-tickets">51,678</div>
+      <div class="label">Member Tickets / 会员票数</div>
+      <div class="subtext" id="member-ticket-pct">47.9% of total</div>
+    </div>
+    <div class="summary-card">
+      <div class="value purple" id="avg-ticket">$25.52</div>
+      <div class="label">Avg Ticket / 平均客单价</div>
+    </div>
+    <div class="summary-card">
+      <div class="value blue" id="avg-sku">4.89</div>
+      <div class="label">Avg SKU/Ticket / 平均SKU</div>
+    </div>
+    <div class="summary-card">
+      <div class="value green" id="avg-categories">2.3</div>
+      <div class="label">Avg Categories / 平均品类</div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('overview')">Overview / 概览</button>
+    <button class="tab-btn" onclick="switchTab('frequency')">Frequency / 频次</button>
+    <button class="tab-btn" onclick="switchTab('value')">Value / 价值</button>
+    <button class="tab-btn" onclick="switchTab('category')">Category / 品类</button>
+  </div>
+
+  <!-- Tab Panels -->
+  <div id="panels">
 
     <!-- Overview Tab -->
-    <div id="overview" class="tab-content active">
-      <div class="card">
-        <h3>Purchase Depth Analysis / 购买深度分析</h3>
-        <p class="desc">By SKU per Ticket (New Tiers) / 按每票SKU数分层</p>
-        <div class="chart-container">
-          <canvas id="skuDepthChart"></canvas>
+    <div class="tab-panel active" id="panel-overview">
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3 class="chart-title">Purchase Depth Analysis / 购买深度分析</h3>
+          <p class="chart-desc">By SKU per Ticket / 按每票SKU数分层</p>
+          <div class="chart-container">
+            <canvas id="chart-skuDepth"></canvas>
+          </div>
         </div>
-        <div class="formula-box">
-          <h4>📐 Calculation Formula / 计算公式</h4>
-          <code>SKU Depth = Total SKUs / Total Tickets</code>
-          <code>Tiers: 1-3, 4-5, 6-7, 8-10, >10 SKU/ticket</code>
-          <code>Member % = Members in tier / Total Members × 100</code>
-          <code>Revenue % = Revenue from tier / Total Revenue × 100</code>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Member Value Segmentation / 会员价值分层</h3>
-        <p class="desc">RFM-based with Detailed Definitions / 基于消费频次和金额</p>
-        <div class="chart-container" style="height: 350px;">
-          <canvas id="valueTierChart"></canvas>
-        </div>
-        <div class="formula-box">
-          <h4>📐 Tier Grouping Definitions / 分层组合定义</h4>
-          <code>High-Tier: Champions + Loyal Customers (RFM score 4-5)</code>
-          <code>Mid-High: Potential Loyalists + Recent + Promising</code>
-          <code>Core: Customers Needing Attention + About to Sleep</code>
-          <code>Entry: At Risk + Cant Lose Them + Lost</code>
+        <div class="chart-card">
+          <h3 class="chart-title">Member Value Segmentation / 会员价值分层</h3>
+          <p class="chart-desc">RFM-based / 基于消费频次和金额</p>
+          <div class="chart-container">
+            <canvas id="chart-valueTier"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Frequency Tab -->
-    <div id="frequency" class="tab-content">
-      <div class="card">
-        <h3>Purchase Frequency / 消费频次分布</h3>
-        <p class="desc">Member Count by Purchase Times / 按消费次数统计</p>
-        <div class="chart-container">
-          <canvas id="frequencyChart"></canvas>
+    <div class="tab-panel" id="panel-frequency">
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3 class="chart-title">Purchase Frequency / 消费频次分布</h3>
+          <p class="chart-desc">Member count by purchase times / 按消费次数统计</p>
+          <div class="chart-container">
+            <canvas id="chart-frequency"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Frequency Distribution / 频次占比</h3>
+          <p class="chart-desc">Top 6 frequency groups / 前6大频次群体</p>
+          <div class="chart-container">
+            <canvas id="chart-frequency-pie"></canvas>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Key Metrics / 关键指标</h3>
-        <div class="summary-grid" style="margin: 0;">
-          <div class="summary-card blue">
-            <div class="value">30%</div>
-            <div class="label">Single Purchase / 单次消费</div>
-            <div class="sub">5,532 members</div>
+      <div class="metrics-card" id="frequency-metrics">
+        <div class="metric">
+          <div class="big-value blue" id="single-pct">30%</div>
+          <div class="label">Single Purchase / 单次消费</div>
+        </div>
+        <div class="metric">
+          <div class="big-value green" id="high-freq-pct">45.5%</div>
+          <div class="label">High-Frequency (≥3x) / 高频消费者</div>
+        </div>
+      </div>
+
+      <!-- Weekly Frequency Section -->
+      <div class="weekly-section" id="weekly-section" style="">
+        <div class="weekly-header">
+          <h3 class="chart-title">📊 Weekly Purchase Frequency Analysis / 每周消费频次分析</h3>
+          <p class="chart-desc">Based on 4-week member transaction data / 基于4周会员消费记录数据</p>
+        </div>
+
+        <div class="weekly-metrics">
+          <div class="weekly-metric">
+            <div class="value purple" id="wf-avg-visits">0.85</div>
+            <div class="label">Avg Visits/Week / 平均每周次数</div>
           </div>
-          <div class="summary-card green">
-            <div class="value">45.5%</div>
-            <div class="label">High-Frequency / 高频消费者</div>
-            <div class="sub">≥3 times</div>
+          <div class="weekly-metric">
+            <div class="value blue" id="wf-active-pct">73.8%</div>
+            <div class="label">Active Buyers / 活跃会员占比</div>
+            <div class="sub" id="wf-members-detail">18,441 / 25,000</div>
+          </div>
+          <div class="weekly-metric">
+            <div class="value amber" id="wf-cleaned">18,441 / 127</div>
+            <div class="label">Cleaned / Outliers / 有效/异常</div>
           </div>
         </div>
-        <div class="formula-box">
-          <h4>📐 Calculation Formula / 计算公式</h4>
-          <code>Frequency = Total tickets per member in period</code>
-          <code>High-Frequency: ≥3 purchases (loyal behavior)</code>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3 class="chart-title">Weekly Visit Distribution / 每周到店次数分布</h3>
+            <p class="chart-desc">Member count by weekly visits</p>
+            <div class="chart-container">
+              <canvas id="chart-weekly-frequency"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Revenue vs Member % / 收入 vs 会员占比</h3>
+            <p class="chart-desc">Compare contribution percentages</p>
+            <div class="chart-container">
+              <canvas id="chart-weekly-combo"></canvas>
+            </div>
+          </div>
         </div>
+
+        <div class="info-box">
+          💡 <strong>Data Cleaning:</strong> Removed outliers (Tickets >100, Amount >$50K, Ticket >$1K, SKU >100)
+        </div>
+      </div>
+
+      <div class="formula-card">
+        <h4>📊 Calculation Formula / 计算公式</h4>
+        <p>Frequency = Total tickets per member in period</p>
+        <p>High-Frequency: ≥3 purchases (loyal behavior)</p>
       </div>
     </div>
 
     <!-- Value Tab -->
-    <div id="value" class="tab-content">
-      <div class="card">
-        <h3>Ticket Amount Tier Analysis / 客单价分层分析</h3>
-        <p class="desc">Member Count % vs Revenue Contribution %</p>
+    <div class="tab-panel" id="panel-value">
+      <div class="chart-card">
+        <h3 class="chart-title">Ticket Amount Tier Analysis / 客单价分层分析</h3>
+        <p class="chart-desc">Member % vs Revenue contribution % / 会员占比 vs 收入贡献</p>
         <div class="chart-container">
-          <canvas id="ticketTierChart"></canvas>
-        </div>
-        <div class="formula-box">
-          <h4>📐 Calculation Formula / 计算公式</h4>
-          <code>Ticket Tier = Average ticket value per member</code>
-          <code>Member % = Members in tier / Total Members × 100</code>
-          <code>Revenue % = Revenue from tier / Total Revenue × 100</code>
+          <canvas id="chart-ticketTier"></canvas>
         </div>
       </div>
-
-      <div class="card">
-        <h3>Key Value Metrics / 关键价值指标</h3>
-        <p class="desc">Based on Ticket Amount Tiers Grouping / 基于客单价区间组合</p>
-        <div class="value-cards">
-          <div class="value-card purple">
-            <div class="pct">20.0%</div>
-            <div class="title">High-Tier (>$48) / 高价值会员</div>
-            <div class="revenue" style="color: #9333ea;">25.5% Revenue</div>
-            <div class="definition">
-              <strong>Definition:</strong><br>
-              Tiers: $48-$54, $54-$60, >$60<br>
-              客单价>$48的会员（3个区间组合）
-            </div>
-          </div>
-          <div class="value-card blue">
-            <div class="pct">30.0%</div>
-            <div class="title">Mid-High ($30-$48) / 中高价值会员</div>
-            <div class="revenue" style="color: #2563eb;">41.0% Revenue</div>
-            <div class="definition">
-              <strong>Definition:</strong><br>
-              Tiers: $30-$36, $36-$42, $42-$48<br>
-              客单价$30-$48的会员（3个区间组合）
-            </div>
-          </div>
-          <div class="value-card amber">
-            <div class="pct">26.0%</div>
-            <div class="title">Core ($18-$30) / 核心会员</div>
-            <div class="revenue" style="color: #d97706;">22.5% Revenue</div>
-            <div class="definition">
-              <strong>Definition:</strong><br>
-              Tiers: $18-$24, $24-$30<br>
-              客单价$18-$30的会员（2个区间组合）
-            </div>
-          </div>
-          <div class="value-card green">
-            <div class="pct">25.0%</div>
-            <div class="title">Deep Buyer (≥8 SKU) / 深度购买者</div>
-            <div class="revenue" style="color: #16a34a;">$38.85 Avg Ticket</div>
-            <div class="definition">
-              <strong>Definition:</strong><br>
-              Tiers: 8-10 SKU, >10 SKU/ticket<br>
-              平均每票≥8 SKU的会员（2个区间组合）
-            </div>
-          </div>
-        </div>
+      <div class="formula-card">
+        <h4>📊 Calculation Formula / 计算公式</h4>
+        <p>Ticket Tier = Average ticket value per member</p>
+        <p>Member % = Members in tier / Total Members × 100</p>
+        <p>Revenue % = Revenue from tier / Total Revenue × 100</p>
       </div>
     </div>
 
     <!-- Category Tab -->
-    <div id="category" class="tab-content">
-      <div class="card">
-        <h3>Category Penetration by Purchase Purpose / 按购买目的分类的品类渗透率</h3>
-        <p class="desc">Grouped Analysis with Color Coding / 分组分析</p>
-
-        <div class="category-grid">
+    <div class="tab-panel" id="panel-category">
+      <div class="chart-card">
+        <h3 class="chart-title">Category Penetration / 品类渗透率</h3>
+        <p class="chart-desc">By purchase purpose / 按购买目的分类</p>
+        <div class="category-groups" id="category-groups">
           
-            <div class="category-card" style="background-color: #3b82f6">
-              <div class="pct">60%</div>
-              <div class="name">Fresh Food</div>
+            <div class="category-group">
+              <h4><span class="color-dot" style="background: #10b981"></span>Buy for Cooking / 烹饪食材 (60%)</h4>
+              <div class="category-list">
+                
+                  <div class="category-item">
+                    <strong>蔬菜</strong>: 7,376 (40%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>肉类</strong>: 5,532 (30%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>蛋类</strong>: 4,426 (24%)
+                  </div>
+                
+              </div>
             </div>
           
-            <div class="category-card" style="background-color: #10b981">
-              <div class="pct">50%</div>
-              <div class="name">Dairy & Eggs</div>
+            <div class="category-group">
+              <h4><span class="color-dot" style="background: #3b82f6"></span>Buy for Eating / 即食食品 (70%)</h4>
+              <div class="category-list">
+                
+                  <div class="category-item">
+                    <strong>水果</strong>: 8,298 (45%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>休闲零食</strong>: 7,376 (40%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>水饮</strong>: 4,609 (25%)
+                  </div>
+                
+              </div>
             </div>
           
-            <div class="category-card" style="background-color: #f59e0b">
-              <div class="pct">70%</div>
-              <div class="name">Snacks & Beverages</div>
+            <div class="category-group">
+              <h4><span class="color-dot" style="background: #f59e0b"></span>Buy for Stocking / 囤货用品 (40%)</h4>
+              <div class="category-list">
+                
+                  <div class="category-item">
+                    <strong>冷冻食品</strong>: 4,426 (24%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>米面粮油</strong>: 3,688 (20%)
+                  </div>
+                
+                  <div class="category-item">
+                    <strong>非食品/日用品</strong>: 2,951 (16%)
+                  </div>
+                
+              </div>
             </div>
           
-            <div class="category-card" style="background-color: #8b5cf6">
-              <div class="pct">40%</div>
-              <div class="name">Household</div>
-            </div>
-          
-        </div>
-
-        <div class="chart-container" style="height: 400px;">
-          <canvas id="categoryChart"></canvas>
-        </div>
-
-        
-          <div style="margin-top: 16px; padding: 12px; border-left: 4px solid #3b82f6; background: #3b82f615; border-radius: 0 8px 8px 0;">
-            <strong style="color: #3b82f6">生鲜食品 - 60% Penetration</strong>
-            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
-              蔬菜 (40%) | 水果 (30%) | 肉类 (24%)
-            </p>
-          </div>
-        
-          <div style="margin-top: 16px; padding: 12px; border-left: 4px solid #10b981; background: #10b98115; border-radius: 0 8px 8px 0;">
-            <strong style="color: #10b981">乳蛋类 - 50% Penetration</strong>
-            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
-              牛奶 (35%) | 鸡蛋 (25%) | 酸奶 (20%)
-            </p>
-          </div>
-        
-          <div style="margin-top: 16px; padding: 12px; border-left: 4px solid #f59e0b; background: #f59e0b15; border-radius: 0 8px 8px 0;">
-            <strong style="color: #f59e0b">零食饮料 - 70% Penetration</strong>
-            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
-              零食 (45%) | 饮料 (40%) | 茶/咖啡 (25%)
-            </p>
-          </div>
-        
-          <div style="margin-top: 16px; padding: 12px; border-left: 4px solid #8b5cf6; background: #8b5cf615; border-radius: 0 8px 8px 0;">
-            <strong style="color: #8b5cf6">家居用品 - 40% Penetration</strong>
-            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
-              清洁用品 (24%) | 纸品 (20%) | 个人护理 (16%)
-            </p>
-          </div>
-        
-
-        <div class="formula-box">
-          <h4>📐 Calculation Formula / 计算公式</h4>
-          <code>Penetration = Unique buyers / Total Members × 100</code>
-          <code>Groups: Fresh Food, Dairy & Eggs, Snacks & Beverages, Household</code>
         </div>
       </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-      <p>One Park Membership Data Analysis | One Park 会员数据分析</p>
-      <p>Generated on 2026-03-08 | 报告生成日期: 2026-03-08</p>
+      <div class="formula-card">
+        <h4>📊 Calculation Formula / 计算公式</h4>
+        <p>Penetration = Unique buyers / Total Members × 100</p>
+        <p>Groups: Buy for Cooking, Buy for Eating, Buy for Stocking</p>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Tab switching
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
+  <div class="footer">
+    <p>Generated on 2026-03-08 | Membership Dashboard v2.0</p>
+  </div>
+</div>
+
+<script>
+// Store all data
+const allData = {"version":"2.0","isMultiStore":true,"storeList":["All Stores / 所有店铺","CS Store","JT Store","KP Store"],"storeCodes":{"CS Store":"CS","JT Store":"JT","KP Store":"KP"},"overall":{"summary":{"total_members":18441,"total_member_tickets":51678,"total_member_revenue":1319072,"avg_member_ticket_value":25.52,"avg_member_sku_per_ticket":4.89,"avg_categories":2.3,"total_store_tickets":107843,"total_store_sales":2467289,"total_store_avg_sku":4.2,"total_store_ticket_price":22.88,"non_member_tickets":56165,"non_member_revenue":1148217,"non_member_avg_ticket":20.44,"member_ticket_pct":47.9,"member_revenue_pct":53.5,"date_range":"2024-01-01 to 2024-12-31","store_name":"All Stores"},"skuDepth":{"labels":["<3","4-6","6-8","8-10",">10"],"labels_full":["<3 SKU/ticket","4-6 SKU/ticket","6-8 SKU/ticket","8-10 SKU/ticket",">10 SKU/ticket"],"member_counts":[3688,5532,4609,2766,1846],"member_pcts":[20,30,25,15,10],"revenue_pcts":[8.5,22,26.5,24,19],"avg_tickets":[15.2,22.5,28.8,35.2,42.5]},"valueTier":{"labels":["VIP","High Value","Medium Value","Value","Regular"],"labels_short":["VIP","High","Medium","Value","Regular"],"member_counts":[922,1475,1844,2213,11987],"member_pcts":[5,8,10,12,65],"revenue_pcts":[18.5,15.2,12.8,10.5,43],"avg_tickets":[48.5,38.2,28.5,22,12.5]},"frequency":{"labels":[1,2,3,4,5,6,7,8,9,10],"values":[5532,3688,2581,1844,1293,922,645,461,323,2581],"percentages":[30,20,14,10,7,5,3.5,2.5,1.75,1.75]},"ticketTier":{"labels":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"labels_cn":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"member_counts":[1106,1475,1844,2213,2581,2213,1844,1475,1106,922,1662],"member_pcts":[6,8,10,12,14,12,10,8,6,5,9],"revenue_pcts":[1.5,3.5,6,9.5,13,14.5,14,12.5,10,8,7.5]},"categoryGroups":[{"group":"Buy for Cooking","group_cn":"Buy for Cooking / 烹饪食材","members":11065,"penetration":60,"color":"#10b981","categories":[{"name":"Vegetable","name_cn":"蔬菜","count":7376,"penetration":40},{"name":"Meat","name_cn":"肉类","count":5532,"penetration":30},{"name":"Eggs","name_cn":"蛋类","count":4426,"penetration":24}]},{"group":"Buy for Eating","group_cn":"Buy for Eating / 即食食品","members":12909,"penetration":70,"color":"#3b82f6","categories":[{"name":"Fruit","name_cn":"水果","count":8298,"penetration":45},{"name":"Snacks","name_cn":"休闲零食","count":7376,"penetration":40},{"name":"Beverage","name_cn":"水饮","count":4609,"penetration":25}]},{"group":"Buy for Stocking","group_cn":"Buy for Stocking / 囤货用品","members":7376,"penetration":40,"color":"#f59e0b","categories":[{"name":"Frozen","name_cn":"冷冻食品","count":4426,"penetration":24},{"name":"Grain&Oil","name_cn":"米面粮油","count":3688,"penetration":20},{"name":"Non-Food","name_cn":"非食品/日用品","count":2951,"penetration":16}]}],"weeklyFrequency":{"labels":["0.25-0.5次/周","0.5-0.75次/周","0.75-1次/周","1-1.5次/周","1.5-2次/周","2-3次/周","3+次/周"],"labelsEn":["0.25-0.5x/week","0.5-0.75x/week","0.75-1x/week","1-1.5x/week","1.5-2x/week","2-3x/week","3+x/week"],"memberCounts":[2213,2581,2951,3688,2581,2951,1476],"memberPcts":[12,14,16,20,14,16,8],"revenuePcts":[6,9,12,22,16,20,15],"totalMembers":18441,"totalInputMembers":25000,"activeBuyerPct":73.8,"avgWeeklyVisits":0.85,"cleanedRecords":18441,"outlierRecords":127},"hasWeeklyFrequencyData":true},"stores":{"CS Store":{"summary":{"total_members":8256,"total_member_tickets":23156,"total_member_revenue":591482,"avg_member_ticket_value":25.54,"avg_member_sku_per_ticket":4.92,"avg_categories":2.35,"total_store_tickets":48293,"total_store_sales":1103678,"total_store_avg_sku":4.25,"total_store_ticket_price":22.85,"non_member_tickets":25137,"non_member_revenue":512196,"non_member_avg_ticket":20.38,"member_ticket_pct":47.9,"member_revenue_pct":53.6,"date_range":"2024-01-01 to 2024-12-31","store_name":"CS Store"},"skuDepth":{"labels":["<3","4-6","6-8","8-10",">10"],"labels_full":["<3 SKU/ticket","4-6 SKU/ticket","6-8 SKU/ticket","8-10 SKU/ticket",">10 SKU/ticket"],"member_counts":[1651,2477,2064,1238,826],"member_pcts":[20,30,25,15,10],"revenue_pcts":[8.5,22,26.5,24,19],"avg_tickets":[15.2,22.5,28.8,35.2,42.5]},"valueTier":{"labels":["VIP","High Value","Medium Value","Value","Regular"],"labels_short":["VIP","High","Medium","Value","Regular"],"member_counts":[413,660,826,991,5366],"member_pcts":[5,8,10,12,65],"revenue_pcts":[18.5,15.2,12.8,10.5,43],"avg_tickets":[48.5,38.2,28.5,22,12.5]},"frequency":{"labels":[1,2,3,4,5,6,7,8,9,10],"values":[2477,1651,1156,826,581,413,289,206,145,1156],"percentages":[30,20,14,10,7,5,3.5,2.5,1.75,1.75]},"ticketTier":{"labels":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"labels_cn":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"member_counts":[495,660,826,991,1156,991,826,660,495,413,745],"member_pcts":[6,8,10,12,14,12,10,8,6,5,9],"revenue_pcts":[1.5,3.5,6,9.5,13,14.5,14,12.5,10,8,7.5]},"categoryGroups":[{"group":"Buy for Cooking","group_cn":"Buy for Cooking / 烹饪食材","members":4954,"penetration":60,"color":"#10b981","categories":[{"name":"Vegetable","name_cn":"蔬菜","count":3302,"penetration":40},{"name":"Meat","name_cn":"肉类","count":2477,"penetration":30},{"name":"Eggs","name_cn":"蛋类","count":1982,"penetration":24}]},{"group":"Buy for Eating","group_cn":"Buy for Eating / 即食食品","members":5779,"penetration":70,"color":"#3b82f6","categories":[{"name":"Fruit","name_cn":"水果","count":3715,"penetration":45},{"name":"Snacks","name_cn":"休闲零食","count":3302,"penetration":40},{"name":"Beverage","name_cn":"水饮","count":2064,"penetration":25}]},{"group":"Buy for Stocking","group_cn":"Buy for Stocking / 囤货用品","members":3302,"penetration":40,"color":"#f59e0b","categories":[{"name":"Frozen","name_cn":"冷冻食品","count":1982,"penetration":24},{"name":"Grain&Oil","name_cn":"米面粮油","count":1651,"penetration":20},{"name":"Non-Food","name_cn":"非食品/日用品","count":1321,"penetration":16}]}],"hasWeeklyFrequencyData":false},"JT Store":{"summary":{"total_members":6147,"total_member_tickets":17226,"total_member_revenue":439687,"avg_member_ticket_value":25.51,"avg_member_sku_per_ticket":4.87,"avg_categories":2.28,"total_store_tickets":35948,"total_store_sales":822429,"total_store_avg_sku":4.18,"total_store_ticket_price":22.88,"non_member_tickets":18722,"non_member_revenue":382742,"non_member_avg_ticket":20.44,"member_ticket_pct":47.9,"member_revenue_pct":53.5,"date_range":"2024-01-01 to 2024-12-31","store_name":"JT Store"},"skuDepth":{"labels":["<3","4-6","6-8","8-10",">10"],"labels_full":["<3 SKU/ticket","4-6 SKU/ticket","6-8 SKU/ticket","8-10 SKU/ticket",">10 SKU/ticket"],"member_counts":[1229,1844,1537,922,615],"member_pcts":[20,30,25,15,10],"revenue_pcts":[8.5,22,26.5,24,19],"avg_tickets":[15.2,22.5,28.8,35.2,42.5]},"valueTier":{"labels":["VIP","High Value","Medium Value","Value","Regular"],"labels_short":["VIP","High","Medium","Value","Regular"],"member_counts":[307,492,615,738,3995],"member_pcts":[5,8,10,12,65],"revenue_pcts":[18.5,15.2,12.8,10.5,43],"avg_tickets":[48.5,38.2,28.5,22,12.5]},"frequency":{"labels":[1,2,3,4,5,6,7,8,9,10],"values":[1844,1229,861,615,430,307,215,154,107,861],"percentages":[30,20,14,10,7,5,3.5,2.5,1.75,1.75]},"ticketTier":{"labels":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"labels_cn":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"member_counts":[369,492,615,738,861,738,615,492,369,307,553],"member_pcts":[6,8,10,12,14,12,10,8,6,5,9],"revenue_pcts":[1.5,3.5,6,9.5,13,14.5,14,12.5,10,8,7.5]},"categoryGroups":[{"group":"Buy for Cooking","group_cn":"Buy for Cooking / 烹饪食材","members":3688,"penetration":60,"color":"#10b981","categories":[{"name":"Vegetable","name_cn":"蔬菜","count":2459,"penetration":40},{"name":"Meat","name_cn":"肉类","count":1844,"penetration":30},{"name":"Eggs","name_cn":"蛋类","count":1475,"penetration":24}]},{"group":"Buy for Eating","group_cn":"Buy for Eating / 即食食品","members":4303,"penetration":70,"color":"#3b82f6","categories":[{"name":"Fruit","name_cn":"水果","count":2766,"penetration":45},{"name":"Snacks","name_cn":"休闲零食","count":2459,"penetration":40},{"name":"Beverage","name_cn":"水饮","count":1537,"penetration":25}]},{"group":"Buy for Stocking","group_cn":"Buy for Stocking / 囤货用品","members":2459,"penetration":40,"color":"#f59e0b","categories":[{"name":"Frozen","name_cn":"冷冻食品","count":1475,"penetration":24},{"name":"Grain&Oil","name_cn":"米面粮油","count":1229,"penetration":20},{"name":"Non-Food","name_cn":"非食品/日用品","count":984,"penetration":16}]}],"hasWeeklyFrequencyData":false},"KP Store":{"summary":{"total_members":4038,"total_member_tickets":11296,"total_member_revenue":287903,"avg_member_ticket_value":25.49,"avg_member_sku_per_ticket":4.85,"avg_categories":2.25,"total_store_tickets":23602,"total_store_sales":541182,"total_store_avg_sku":4.15,"total_store_ticket_price":22.92,"non_member_tickets":12306,"non_member_revenue":253279,"non_member_avg_ticket":20.58,"member_ticket_pct":47.9,"member_revenue_pct":53.2,"date_range":"2024-01-01 to 2024-12-31","store_name":"KP Store"},"skuDepth":{"labels":["<3","4-6","6-8","8-10",">10"],"labels_full":["<3 SKU/ticket","4-6 SKU/ticket","6-8 SKU/ticket","8-10 SKU/ticket",">10 SKU/ticket"],"member_counts":[808,1211,1010,606,404],"member_pcts":[20,30,25,15,10],"revenue_pcts":[8.5,22,26.5,24,19],"avg_tickets":[15.2,22.5,28.8,35.2,42.5]},"valueTier":{"labels":["VIP","High Value","Medium Value","Value","Regular"],"labels_short":["VIP","High","Medium","Value","Regular"],"member_counts":[202,323,404,485,2626],"member_pcts":[5,8,10,12,65],"revenue_pcts":[18.5,15.2,12.8,10.5,43],"avg_tickets":[48.5,38.2,28.5,22,12.5]},"frequency":{"labels":[1,2,3,4,5,6,7,8,9,10],"values":[1211,808,565,404,283,202,141,101,71,565],"percentages":[30,20,14,10,7,5,3.5,2.5,1.75,1.75]},"ticketTier":{"labels":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"labels_cn":["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],"member_counts":[242,323,404,485,565,485,404,323,242,202,364],"member_pcts":[6,8,10,12,14,12,10,8,6,5,9],"revenue_pcts":[1.5,3.5,6,9.5,13,14.5,14,12.5,10,8,7.5]},"categoryGroups":[{"group":"Buy for Cooking","group_cn":"Buy for Cooking / 烹饪食材","members":2423,"penetration":60,"color":"#10b981","categories":[{"name":"Vegetable","name_cn":"蔬菜","count":1615,"penetration":40},{"name":"Meat","name_cn":"肉类","count":1211,"penetration":30},{"name":"Eggs","name_cn":"蛋类","count":969,"penetration":24}]},{"group":"Buy for Eating","group_cn":"Buy for Eating / 即食食品","members":2827,"penetration":70,"color":"#3b82f6","categories":[{"name":"Fruit","name_cn":"水果","count":1817,"penetration":45},{"name":"Snacks","name_cn":"休闲零食","count":1615,"penetration":40},{"name":"Beverage","name_cn":"水饮","count":1010,"penetration":25}]},{"group":"Buy for Stocking","group_cn":"Buy for Stocking / 囤货用品","members":1615,"penetration":40,"color":"#f59e0b","categories":[{"name":"Frozen","name_cn":"冷冻食品","count":969,"penetration":24},{"name":"Grain&Oil","name_cn":"米面粮油","count":808,"penetration":20},{"name":"Non-Food","name_cn":"非食品/日用品","count":646,"penetration":16}]}],"hasWeeklyFrequencyData":false}}};
+
+let currentStore = 'overall';
+let charts = {};
+
+// Switch store
+function switchStore(storeId) {
+  currentStore = storeId;
+
+  // Update buttons
+  document.querySelectorAll('.store-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.store === storeId);
+  });
+
+  // Get data
+  const data = storeId === 'overall' ? allData.overall : allData.stores[storeId];
+  if (!data) return;
+
+  const s = data.summary;
+
+  // Update title
+  const storeName = storeId === 'overall' ? 'All Stores' : storeId;
+  document.getElementById('main-title').textContent = '📊 ' + storeName + ' - Membership Dashboard';
+  document.getElementById('sub-title').textContent = storeName + ' 会员数据分析 | Membership Analytics';
+
+  // Update summary cards
+  document.getElementById('total-members').textContent = s.total_members.toLocaleString();
+  document.getElementById('member-revenue').textContent = '$' + s.total_member_revenue.toLocaleString();
+  document.getElementById('member-revenue-pct').textContent = s.member_revenue_pct + '% of total';
+  document.getElementById('member-tickets').textContent = s.total_member_tickets.toLocaleString();
+  document.getElementById('member-ticket-pct').textContent = s.member_ticket_pct + '% of total';
+  document.getElementById('avg-ticket').textContent = '$' + s.avg_member_ticket_value.toFixed(2);
+  document.getElementById('avg-sku').textContent = s.avg_member_sku_per_ticket.toFixed(2);
+  document.getElementById('avg-categories').textContent = s.avg_categories.toFixed(1);
+
+  // Update frequency metrics
+  document.getElementById('single-pct').textContent = data.frequency.percentages[0] + '%';
+  document.getElementById('high-freq-pct').textContent = data.frequency.percentages.slice(2).reduce((a,b)=>a+b,0).toFixed(1) + '%';
+
+  // Update weekly frequency section
+  const weeklySection = document.getElementById('weekly-section');
+  if (data.hasWeeklyFrequencyData && data.weeklyFrequency) {
+    weeklySection.style.display = 'block';
+    document.getElementById('wf-avg-visits').textContent = data.weeklyFrequency.avgWeeklyVisits.toFixed(2);
+    document.getElementById('wf-active-pct').textContent = data.weeklyFrequency.activeBuyerPct.toFixed(1) + '%';
+    document.getElementById('wf-members-detail').textContent = data.weeklyFrequency.totalMembers.toLocaleString() + ' / ' + data.weeklyFrequency.totalInputMembers.toLocaleString();
+    document.getElementById('wf-cleaned').textContent = data.weeklyFrequency.cleanedRecords.toLocaleString() + ' / ' + data.weeklyFrequency.outlierRecords;
+    updateWeeklyCharts(data.weeklyFrequency);
+  } else {
+    weeklySection.style.display = 'none';
+  }
+
+  // Update category groups
+  document.getElementById('category-groups').innerHTML = data.categoryGroups.map(g => `
+    <div class="category-group">
+      <h4><span class="color-dot" style="background: ${g.color}"></span>${g.group_cn} (${g.penetration}%)</h4>
+      <div class="category-list">
+        ${g.categories.map(c => `
+          <div class="category-item">
+            <strong>${c.name_cn}</strong>: ${c.count.toLocaleString()} (${c.penetration}%)
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Update charts
+  updateCharts(data);
+}
+
+// Switch tab
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tabName));
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'panel-' + tabName);
+  });
+}
+
+// Chart colors
+const colors = {
+  blue: '#3b82f6',
+  green: '#10b981',
+  amber: '#f59e0b',
+  purple: '#8b5cf6',
+  cyan: '#06b6d4',
+  rose: '#f43f5e',
+  pink: '#ec4899'
+};
+
+// Initialize charts
+function initCharts() {
+  const data = allData.overall;
+
+  // SKU Depth Chart
+  charts.skuDepth = new Chart(document.getElementById('chart-skuDepth'), {
+    type: 'bar',
+    data: {
+      labels: data.skuDepth.labels,
+      datasets: [{
+        label: 'Members',
+        data: data.skuDepth.member_counts,
+        backgroundColor: colors.blue
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Value Tier Chart
+  charts.valueTier = new Chart(document.getElementById('chart-valueTier'), {
+    type: 'bar',
+    data: {
+      labels: data.valueTier.labels_short,
+      datasets: [{
+        label: 'Members',
+        data: data.valueTier.member_counts,
+        backgroundColor: colors.purple
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Frequency Chart
+  charts.frequency = new Chart(document.getElementById('chart-frequency'), {
+    type: 'bar',
+    data: {
+      labels: data.frequency.labels.map(l => l + 'x'),
+      datasets: [{
+        label: 'Members',
+        data: data.frequency.values,
+        backgroundColor: colors.blue
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Frequency Pie
+  charts.frequencyPie = new Chart(document.getElementById('chart-frequency-pie'), {
+    type: 'pie',
+    data: {
+      labels: data.frequency.labels.slice(0, 6).map(l => l + 'x'),
+      datasets: [{
+        data: data.frequency.values.slice(0, 6),
+        backgroundColor: [colors.blue, colors.green, colors.amber, colors.purple, colors.cyan, colors.rose]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Ticket Tier Chart
+  charts.ticketTier = new Chart(document.getElementById('chart-ticketTier'), {
+    type: 'bar',
+    data: {
+      labels: data.ticketTier.labels,
+      datasets: [
+        {
+          label: 'Members',
+          data: data.ticketTier.member_counts,
+          backgroundColor: colors.purple,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Revenue %',
+          data: data.ticketTier.revenue_pcts,
+          type: 'line',
+          borderColor: colors.rose,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { type: 'linear', position: 'left' },
+        y1: { type: 'linear', position: 'right', max: 100 }
+      }
     }
+  });
 
-    // Chart.js defaults
-    Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
-    Chart.defaults.font.size = 12;
-
-    // SKU Depth Chart
-    new Chart(document.getElementById('skuDepthChart'), {
+  // Weekly Frequency Chart
+  if (data.hasWeeklyFrequencyData && data.weeklyFrequency) {
+    charts.weeklyFreq = new Chart(document.getElementById('chart-weekly-frequency'), {
       type: 'bar',
       data: {
-        labels: ["1-3 SKU","4-5 SKU","6-7 SKU","8-10 SKU",">10 SKU"],
+        labels: data.weeklyFrequency.labelsEn,
         datasets: [{
-          label: 'Members / 会员数',
-          data: [3688,5532,4609,2766,1846],
-          backgroundColor: '#10b981',
-          yAxisID: 'y'
-        }, {
-          label: 'Revenue % / 收入占比',
-          data: [8.5,22,26.5,24,19],
-          type: 'line',
-          borderColor: '#ef4444',
-          backgroundColor: 'transparent',
-          yAxisID: 'y1',
-          tension: 0.3
+          label: 'Members',
+          data: data.weeklyFrequency.memberCounts,
+          backgroundColor: colors.purple
         }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          y: { type: 'linear', position: 'left' },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
-        }
-      }
+      options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Value Tier Chart
-    new Chart(document.getElementById('valueTierChart'), {
+    charts.weeklyCombo = new Chart(document.getElementById('chart-weekly-combo'), {
       type: 'bar',
       data: {
-        labels: ["Champ","Loyal","Potential","Recent","Promising","Attention","Sleep","Risk","Cant Lose","Lost"],
-        datasets: [{
-          label: 'Members / 会员数',
-          data: [922,1475,1844,2213,1475,1844,2213,1844,1475,2766],
-          backgroundColor: '#06b6d4',
-          yAxisID: 'y'
-        }, {
-          label: 'Revenue % / 收入占比',
-          data: [18.5,15.2,12.8,10.5,8.2,7.5,6.8,8.5,6,6],
-          type: 'line',
-          borderColor: '#f59e0b',
-          backgroundColor: 'transparent',
-          yAxisID: 'y1',
-          tension: 0.3
-        }]
+        labels: data.weeklyFrequency.labelsEn,
+        datasets: [
+          {
+            label: 'Member %',
+            data: data.weeklyFrequency.memberPcts,
+            backgroundColor: colors.blue
+          },
+          {
+            label: 'Revenue %',
+            data: data.weeklyFrequency.revenuePcts,
+            backgroundColor: colors.rose
+          }
+        ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          y: { type: 'linear', position: 'left' },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
-        }
-      }
+      options: { responsive: true, maintainAspectRatio: false }
     });
+  }
+}
 
-    // Frequency Chart
-    new Chart(document.getElementById('frequencyChart'), {
-      type: 'bar',
-      data: {
-        labels: ["1x","2x","3x","4x","5x","6x","7x","8x","9x","10x"],
-        datasets: [{
-          label: 'Members / 会员数',
-          data: [5532,3688,2581,1844,1293,922,645,461,323,2581],
-          backgroundColor: '#3b82f6'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true } }
-      }
-    });
+// Update charts
+function updateCharts(data) {
+  if (charts.skuDepth) {
+    charts.skuDepth.data.labels = data.skuDepth.labels;
+    charts.skuDepth.data.datasets[0].data = data.skuDepth.member_counts;
+    charts.skuDepth.update();
+  }
 
-    // Ticket Tier Chart
-    new Chart(document.getElementById('ticketTierChart'), {
-      type: 'bar',
-      data: {
-        labels: ["$1-$6","$6-$12","$12-$18","$18-$24","$24-$30","$30-$36","$36-$42","$42-$48","$48-$54","$54-$60",">$60"],
-        datasets: [{
-          label: 'Members / 会员数',
-          data: [1106,1475,1844,2213,2581,2213,1844,1475,1106,922,1662],
-          backgroundColor: '#8b5cf6',
-          yAxisID: 'y'
-        }, {
-          label: 'Revenue % / 收入占比',
-          data: [1.5,3.5,6,9.5,13,14.5,14,12.5,10,8,7.5],
-          type: 'line',
-          borderColor: '#ef4444',
-          backgroundColor: 'transparent',
-          yAxisID: 'y1',
-          tension: 0.3
-        }, {
-          label: 'Member % / 会员占比',
-          data: [6,8,10,12,14,12,10,8,6,5,9],
-          type: 'line',
-          borderColor: '#3b82f6',
-          backgroundColor: 'transparent',
-          yAxisID: 'y1',
-          borderDash: [5, 5],
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          y: { type: 'linear', position: 'left' },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
-        }
-      }
-    });
+  if (charts.valueTier) {
+    charts.valueTier.data.labels = data.valueTier.labels_short;
+    charts.valueTier.data.datasets[0].data = data.valueTier.member_counts;
+    charts.valueTier.update();
+  }
 
-    // Category Chart
-    const categoryData = [{"name":"Vegetables","name_cn":"蔬菜","count":7376,"penetration":40,"group":"Fresh Food","color":"#3b82f6"},{"name":"Fruits","name_cn":"水果","count":5532,"penetration":30,"group":"Fresh Food","color":"#3b82f6"},{"name":"Meat","name_cn":"肉类","count":4426,"penetration":24,"group":"Fresh Food","color":"#3b82f6"},{"name":"Milk","name_cn":"牛奶","count":6454,"penetration":35,"group":"Dairy & Eggs","color":"#10b981"},{"name":"Eggs","name_cn":"鸡蛋","count":4609,"penetration":25,"group":"Dairy & Eggs","color":"#10b981"},{"name":"Yogurt","name_cn":"酸奶","count":3688,"penetration":20,"group":"Dairy & Eggs","color":"#10b981"},{"name":"Snacks","name_cn":"零食","count":8298,"penetration":45,"group":"Snacks & Beverages","color":"#f59e0b"},{"name":"Drinks","name_cn":"饮料","count":7376,"penetration":40,"group":"Snacks & Beverages","color":"#f59e0b"},{"name":"Tea/Coffee","name_cn":"茶/咖啡","count":4609,"penetration":25,"group":"Snacks & Beverages","color":"#f59e0b"},{"name":"Cleaning","name_cn":"清洁用品","count":4426,"penetration":24,"group":"Household","color":"#8b5cf6"},{"name":"Paper","name_cn":"纸品","count":3688,"penetration":20,"group":"Household","color":"#8b5cf6"},{"name":"Personal Care","name_cn":"个人护理","count":2951,"penetration":16,"group":"Household","color":"#8b5cf6"}];
-    new Chart(document.getElementById('categoryChart'), {
-      type: 'bar',
-      data: {
-        labels: categoryData.map(c => c.name_cn),
-        datasets: [{
-          label: 'Penetration % / 渗透率',
-          data: categoryData.map(c => c.penetration),
-          backgroundColor: categoryData.map(c => c.color)
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { x: { beginAtZero: true, max: 50 } }
-      }
-    });
-  </script>
+  if (charts.frequency) {
+    charts.frequency.data.labels = data.frequency.labels.map(l => l + 'x');
+    charts.frequency.data.datasets[0].data = data.frequency.values;
+    charts.frequency.update();
+  }
+
+  if (charts.frequencyPie) {
+    charts.frequencyPie.data.labels = data.frequency.labels.slice(0, 6).map(l => l + 'x');
+    charts.frequencyPie.data.datasets[0].data = data.frequency.values.slice(0, 6);
+    charts.frequencyPie.update();
+  }
+
+  if (charts.ticketTier) {
+    charts.ticketTier.data.labels = data.ticketTier.labels;
+    charts.ticketTier.data.datasets[0].data = data.ticketTier.member_counts;
+    charts.ticketTier.data.datasets[1].data = data.ticketTier.revenue_pcts;
+    charts.ticketTier.update();
+  }
+}
+
+// Update weekly charts
+function updateWeeklyCharts(wf) {
+  if (charts.weeklyFreq) {
+    charts.weeklyFreq.data.labels = wf.labelsEn;
+    charts.weeklyFreq.data.datasets[0].data = wf.memberCounts;
+    charts.weeklyFreq.update();
+  }
+
+  if (charts.weeklyCombo) {
+    charts.weeklyCombo.data.labels = wf.labelsEn;
+    charts.weeklyCombo.data.datasets[0].data = wf.memberPcts;
+    charts.weeklyCombo.data.datasets[1].data = wf.revenuePcts;
+    charts.weeklyCombo.update();
+  }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', initCharts);
+</script>
 </body>
 </html>
