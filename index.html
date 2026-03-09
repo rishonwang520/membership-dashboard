@@ -41,6 +41,7 @@
     .purple { color: #8b5cf6; }
     .cyan { color: #06b6d4; }
     .rose { color: #f43f5e; }
+    .pink { color: #ec4899; }
 
     .overview-card { background: linear-gradient(to right, #f8fafc, #f1f5f9); padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
@@ -71,6 +72,7 @@
     .bar-fill.purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
     .bar-fill.cyan { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
     .bar-fill.rose { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+    .bar-fill.pink { background: linear-gradient(90deg, #ec4899, #f472b6); }
     .bar-value { font-size: 11px; color: white; font-weight: 600; white-space: nowrap; }
 
     .metrics-card { background: linear-gradient(to right, #eff6ff, #eef2ff); padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: center; gap: 48px; }
@@ -93,12 +95,191 @@
     .group-name { font-weight: 600; color: white; }
     .group-pct { font-size: 20px; font-weight: bold; color: white; }
 
+    /* Weekly Frequency Section Styles */
+    .weekly-frequency-section {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+      border: 2px solid #c084fc;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .weekly-header { margin-bottom: 20px; }
+    .metrics-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .metric-box {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .metric-box .big-value { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
+    .metric-box .label { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .metric-box .sub-label { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+    .info-box {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #64748b;
+      border: 1px dashed #cbd5e1;
+      margin-top: 16px;
+    }
+    .charts-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* Weekly Bar Item */
+    .bar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .bar-item .bar-label {
+      width: 100px;
+      font-size: 11px;
+      color: #475569;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .bar-item .bar-container {
+      flex: 1;
+      height: 24px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-item .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .bar-item .bar-value {
+      width: 60px;
+      font-size: 11px;
+      color: #1e293b;
+      font-weight: 600;
+      text-align: right;
+    }
+    .bar-item .bar-pct {
+      width: 50px;
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    /* Pie Chart */
+    .pie-chart {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+    }
+    .pie-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #f1f5f9;
+    }
+    .pie-slice {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+    .pie-label {
+      position: absolute;
+      font-size: 10px;
+      color: #1e293b;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .label-text { display: block; }
+    .label-pct { display: block; font-weight: bold; }
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    /* Combo Chart */
+    .combo-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 200px;
+      padding: 20px 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+    .combo-bar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+    .combo-label {
+      font-size: 9px;
+      color: #64748b;
+      margin-bottom: 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .combo-bar-container {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .combo-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #8b5cf6, #a78bfa);
+      border-radius: 4px;
+      transition: height 0.3s ease;
+    }
+    .combo-bar.members { background: linear-gradient(to top, #8b5cf6, #a78bfa); }
+    .combo-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 2px;
+    }
+    .combo-line.member-pct { background: #3b82f6; }
+    .combo-line.revenue-pct { background: #f43f5e; }
+    .combo-values {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .member-val { font-size: 10px; font-weight: 600; color: #1e293b; }
+    .pct-val { font-size: 9px; color: #64748b; }
+
     .footer { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; }
 
     @media (max-width: 768px) {
       .overview-grid { grid-template-columns: repeat(2, 1fr); }
       .value-metrics { grid-template-columns: 1fr; }
       .metrics-card { flex-direction: column; gap: 24px; }
+      .metrics-grid-3 { grid-template-columns: 1fr; }
+      .charts-row { grid-template-columns: 1fr; }
     }
   
   </style>
@@ -109,10 +290,26 @@
 </script>
 <script>
 // Debug log
-console.log('Dashboard Data Debug:', {
-  storeCount: Object.keys(JSON.parse(document.getElementById('all-data').textContent).stores).length,
-  stores: Object.keys(JSON.parse(document.getElementById('all-data').textContent).stores)
-});
+(function() {
+  var dataEl = document.getElementById('all-data');
+  var config = JSON.parse(dataEl.textContent);
+  console.log('=== Dashboard Data Debug ===');
+  console.log('Store count:', Object.keys(config.stores).length);
+  console.log('Stores:', Object.keys(config.stores));
+  console.log('Initial store:', config.initialStoreId);
+  console.log('Debug info:', config.debug);
+  if (config.stores.overall) {
+    console.log('Overall has weeklyFrequency:', !!config.stores.overall.weeklyFrequency);
+    console.log('Overall hasWeeklyFrequencyData:', config.stores.overall.hasWeeklyFrequencyData);
+    if (config.stores.overall.weeklyFrequency) {
+      console.log('Weekly frequency data sample:', {
+        avgWeeklyVisits: config.stores.overall.weeklyFrequency.avgWeeklyVisits,
+        totalMembers: config.stores.overall.weeklyFrequency.totalMembers,
+        labelsCount: config.stores.overall.weeklyFrequency.labelsEn?.length
+      });
+    }
+  }
+})();
 </script>
 
 <div class="dashboard">
@@ -1002,7 +1199,7 @@ console.log('Dashboard Data Debug:', {
 
   <!-- Footer -->
   <div class="footer">
-    <p>Generated on 2026-03-08</p>
+    <p>Generated on 2026-03-09</p>
   </div>
 </div>
 
@@ -1122,47 +1319,97 @@ console.log('Dashboard Data Debug:', {
   function updateWeeklyFrequencyCharts(data) {
     var section = document.getElementById('weekly-frequency-section');
     if (!section) return;
-    
-    if (!data || !data.hasWeeklyFrequencyData) {
+
+    // Check if weekly frequency data exists
+    if (!data || !data.weeklyFrequency) {
       section.style.display = 'none';
       return;
     }
-    
+
     section.style.display = 'block';
     var wf = data.weeklyFrequency;
-    
+
     // Update metrics
     var avgVisits = document.getElementById('wf-avg-visits');
     var activePct = document.getElementById('wf-active-pct');
     var membersDetail = document.getElementById('wf-members-detail');
     var cleaned = document.getElementById('wf-cleaned');
-    
+
     if (avgVisits) avgVisits.textContent = wf.avgWeeklyVisits.toFixed(2);
     if (activePct) activePct.textContent = wf.activeBuyerPct.toFixed(1) + '%';
     if (membersDetail) membersDetail.textContent = wf.totalMembers.toLocaleString() + ' / ' + wf.totalInputMembers.toLocaleString();
     if (cleaned) cleaned.textContent = wf.cleanedRecords.toLocaleString() + ' / ' + wf.outlierRecords;
-    
-    // Update bar chart
+
+    // Regenerate bar chart HTML
     var barContainer = document.getElementById('chart-weekly-frequency');
     if (barContainer && wf.memberCounts) {
       var maxVal = Math.max.apply(null, wf.memberCounts);
-      var rows = barContainer.querySelectorAll('.bar-item');
       var colors = ['purple', 'blue', 'cyan', 'green', 'amber', 'rose', 'pink'];
-      
-      rows.forEach(function(row, i) {
+      var barHtml = '';
+
+      wf.labelsEn.forEach(function(label, i) {
         var val = wf.memberCounts[i];
         var pct = maxVal > 0 ? (val / maxVal * 100) : 0;
-        var fill = row.querySelector('.bar-fill');
-        var value = row.querySelector('.bar-value');
-        var pctEl = row.querySelector('.bar-pct');
-        
-        if (fill) {
-          fill.style.width = Math.max(pct, 5) + '%';
-          fill.className = 'bar-fill ' + colors[i % colors.length];
-        }
-        if (value) value.textContent = val.toLocaleString();
-        if (pctEl) pctEl.textContent = '(' + wf.memberPcts[i] + '%)';
+        var color = colors[i % colors.length];
+        barHtml += '<div class="bar-item">' +
+          '<div class="bar-label">' + label + '</div>' +
+          '<div class="bar-container">' +
+            '<div class="bar-fill ' + color + '" style="width: ' + Math.max(pct, 5) + '%"></div>' +
+          '</div>' +
+          '<div class="bar-value">' + val.toLocaleString() + '</div>' +
+          '<div class="bar-pct">(' + wf.memberPcts[i] + '%)</div>' +
+        '</div>';
       });
+      barContainer.innerHTML = barHtml;
+    }
+
+    // Regenerate pie chart HTML
+    var pieContainer = document.getElementById('pie-weekly-frequency');
+    if (pieContainer && wf.memberCounts) {
+      var total = wf.memberCounts.reduce(function(a, b) { return a + b; }, 0);
+      if (total === 0) {
+        pieContainer.innerHTML = '<div class="no-data">No data</div>';
+      } else {
+        var pieColors = ['#8b5cf6', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+        var pieHtml = '<div class="pie-container">';
+        var cumulativeAngle = 0;
+
+        wf.memberCounts.forEach(function(count, i) {
+          if (count === 0) return;
+          var angle = (count / total) * 360;
+          var startAngle = cumulativeAngle;
+          cumulativeAngle += angle;
+          pieHtml += '<div class="pie-slice" style="' +
+            'background: conic-gradient(from=' + startAngle + 'deg, ' + pieColors[i % pieColors.length] + ' ' + startAngle + 'deg, ' + pieColors[i % pieColors.length] + ' ' + cumulativeAngle + 'deg, transparent ' + cumulativeAngle + 'deg);' +
+          '"></div>';
+        });
+        pieHtml += '</div>';
+        pieContainer.innerHTML = pieHtml;
+      }
+    }
+
+    // Regenerate combo chart HTML
+    var comboContainer = document.getElementById('chart-weekly-combo');
+    if (comboContainer && wf.memberCounts) {
+      var maxMembers = Math.max.apply(null, wf.memberCounts);
+      var comboHtml = '';
+
+      wf.labelsEn.forEach(function(label, i) {
+        var memberHeight = maxMembers > 0 ? (wf.memberCounts[i] / maxMembers * 100) : 0;
+        comboHtml += '<div class="combo-bar-item">' +
+          '<div class="combo-label">' + label + '</div>' +
+          '<div class="combo-bar-container">' +
+            '<div class="combo-bar members" style="height: ' + memberHeight + '%"></div>' +
+            '<div class="combo-line member-pct" style="bottom: ' + wf.memberPcts[i] + '%"></div>' +
+            '<div class="combo-line revenue-pct" style="bottom: ' + wf.revenuePcts[i] + '%"></div>' +
+          '</div>' +
+          '<div class="combo-values">' +
+            '<span class="member-val">' + wf.memberCounts[i].toLocaleString() + '</span>' +
+            '<span class="pct-val">' + wf.memberPcts[i] + '%/' + wf.revenuePcts[i] + '%</span>' +
+          '</div>' +
+        '</div>';
+      });
+      comboContainer.innerHTML = comboHtml;
     }
   }
 
